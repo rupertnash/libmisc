@@ -40,15 +40,21 @@
 // If B implements LegacyBidirectionalIterator then so does this.
 template <typename B, std::size_t index>
 struct element_iterator {
+  using base_iterator = B;
+  using base_value_type = typename std::decay<
+    decltype(*std::declval<B>())
+    >::type;
+
   // Support iterator_traits
-  using value_type = typename std::decay<decltype(std::get<index>(*B()))>::type;
+  using value_type = typename std::decay<
+    decltype(std::get<index>(std::declval<base_value_type>()))
+    >::type;
   using reference = value_type&;
   using pointer = value_type*;
   using difference_type = typename std::iterator_traits<B>::difference_type;
   // This is probably wrong
   using iterator_category = typename std::iterator_traits<B>::iterator_category;
 
-  using base_iterator = B;
 
   // Pre increment 
   element_iterator& operator++() {
