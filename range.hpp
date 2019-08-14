@@ -38,9 +38,8 @@ namespace rangepp {
     value_t step;
     int step_end;
   public:
-    range_impl(value_t begin, value_t end, value_t step=1):
-      rbegin(begin),rend(end),step(step){
-      step_end=(rend-rbegin)/step;
+    constexpr range_impl(value_t begin, value_t end, value_t step=1):
+    rbegin(begin), rend(end), step(step), step_end((rend-rbegin)/step) {
       if(rbegin+step_end*step != rend){
 	step_end++;
       }
@@ -54,41 +53,45 @@ namespace rangepp {
       int current_step;
       range_impl& parent;
     public:
-      iterator(int start,range_impl& parent): current_step(start), parent(parent){current_value=parent.rbegin+current_step*parent.step;}
-      value_t operator*() {return current_value;}
-      const iterator* operator++(){
+      constexpr iterator(int start,range_impl& p): current_value(p.rbegin + start*p.step),
+						   current_step(start), parent(p) {
+      }
+      constexpr value_t operator*() {
+	return current_value;
+      }
+      constexpr const iterator* operator++(){
 	current_value+=parent.step;
 	current_step++;
 	return this;
       }
-      const iterator* operator++(int){
+      constexpr const iterator* operator++(int){
 	current_value+=parent.step;
 	current_step++;
 	return this;
       }
-      bool operator==(const iterator& other) {
+      constexpr bool operator==(const iterator& other) {
 	return current_step==other.current_step;
       }
-      bool operator!=(const iterator& other) {
+      constexpr bool operator!=(const iterator& other) {
 	return current_step!=other.current_step;
       }
-      iterator operator+(int s) {
+      constexpr iterator operator+(int s) {
 	iterator ret=*this;
 	ret.current_step+=s;
 	ret.current_value+=s*parent.step;
 	return ret;
       }
-      iterator operator-(int s){
+      constexpr iterator operator-(int s){
 	iterator ret=*this;
 	ret.current_step-=s;
 	ret.current_value-=s*parent.step;
 	return ret;
       }
-      const iterator* operator--(){
+      constexpr const iterator* operator--(){
 	current_value-=parent.step;
 	current_step--;
 	return this;}
-      iterator operator--(int){
+      constexpr iterator operator--(int){
 	iterator old=*this;
 	current_value-=parent.step;
 	current_step--;
@@ -96,37 +99,37 @@ namespace rangepp {
       }
     };
 
-    iterator begin(){
+    constexpr iterator begin(){
       return iterator(0,*this);
     }
-    iterator end(){
+    constexpr iterator end(){
       return iterator(step_end,*this);
     }
 
-    value_t operator[](int s){
+    constexpr value_t operator[](int s){
       return rbegin+s*step;
     }
 
-    int size(){
+    constexpr int size(){
       return step_end;
     }
   };
 }
 template<typename vt,typename other>
-auto range(other begin, other end, vt stepsize)->rangepp::range_impl<decltype(begin+end+stepsize)>
+constexpr auto range(other begin, other end, vt stepsize)->rangepp::range_impl<decltype(begin+end+stepsize)>
 {
     
   return rangepp::range_impl<decltype(begin+end+stepsize)>(begin,end,stepsize);
 }
 
 template<typename b,typename e>
-auto range(b begin, e end) -> rangepp::range_impl<decltype(begin+end)>
+constexpr auto range(b begin, e end) -> rangepp::range_impl<decltype(begin+end)>
 {
   return rangepp::range_impl<decltype(begin+end)>(begin,end,1);
 }
 
 template<typename e>
-rangepp::range_impl<e> range(e end){
+constexpr rangepp::range_impl<e> range(e end){
   return rangepp::range_impl<e>(0,end,1);
 }
 
